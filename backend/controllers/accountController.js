@@ -5,7 +5,7 @@ export const getAccounts = async (req, res) => {
     const { userId } = req.body.user;
 
     const account = await pool.query({
-      text: `SELECT * FROM tblaccount user_id = $1`,
+      text: `SELECT * FROM tblaccount WHERE user_id = $1`,
       values: [userId],
     });
 
@@ -91,16 +91,18 @@ export const addMoneyToAccount = async (req, res) => {
     const newAmount = Number(amount);
 
     const result = await pool.query({
-      text: `UPDATE tblaccount SET account_balance =(account_balance + $1), updatedat = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      text: `UPDATE tblaccount SET account_balance = (account_balance + $1), updatedat = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
       values: [newAmount, id],
     });
 
     const accountInfomation = result.rows[0];
 
+    //     console.log(result);
+
     const description = accountInfomation.account_name + " (Deposit)";
 
     const transQuery = {
-      text: `INSERT INTO tbltransaction(user_id, description, tpye, status, amount, source) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,
+      text: `INSERT INTO tbltransaction(user_id, description, type, status, amount, source) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,
       values: [
         userId,
         description,

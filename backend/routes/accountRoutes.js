@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 router.get("/:id?", authMiddleware, getAccounts);
-router.get("/create", authMiddleware, createAccount);
-router.get("/add-money/:id", authMiddleware, addMoneyToAccount);
+router.post("/create", authMiddleware, createAccount);
+router.put("/add-money/:id", authMiddleware, addMoneyToAccount);
 
 export default router;
