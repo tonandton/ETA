@@ -5,8 +5,8 @@ export const getDashboardInformation = async (req, res) => {
   try {
     const { userId } = req.body.user;
 
-    const totalIncome = 0;
-    const totoalExpense = 0;
+    let totalIncome = 0;
+    let totalExpense = 0;
 
     const transactionsResult = await pool.query({
       text: `SELECT type, SUM(amount) AS totalAmount FROM tbltransaction WHERE user_id = $1 GROUP BY type`,
@@ -19,11 +19,11 @@ export const getDashboardInformation = async (req, res) => {
       if (transaction.type === "income") {
         totalIncome += transaction.totalamount;
       } else {
-        totoalExpense += transaction.totalamount;
+        totalExpense += transaction.totalamount;
       }
     });
 
-    const avaliableBalance = totalIncome - totoalExpense;
+    const avaliableBalance = totalIncome - totalExpense;
 
     // Aggregate transactions to sum by type and group by month
     const year = new Date().getFullYear();
@@ -42,7 +42,7 @@ export const getDashboardInformation = async (req, res) => {
       );
 
       const income =
-        monthData.find((item) => item.type === "income")?.totalIncome || 0;
+        monthData.find((item) => item.type === "income")?.totalamount || 0;
 
       const expense =
         monthData.find((item) => item.type === "expense")?.totalExpense || 0;
@@ -56,7 +56,7 @@ export const getDashboardInformation = async (req, res) => {
 
     // Fetch last transactions
     const lastTransactionResult = await pool.query({
-      text: `SELECT * FROM tbltransaction WHERE user_id = $1 ORDER BY DESC LIMIT 5`,
+      text: `SELECT * FROM tbltransaction WHERE user_id = $1 ORDER BY id DESC LIMIT 5`,
       values: [userId],
     });
 
@@ -64,7 +64,7 @@ export const getDashboardInformation = async (req, res) => {
 
     // Fetch last accounts
     const lastAccountResult = await pool.query({
-      text: `SELECT * FROM tblaccount WHERE user_id ORDER BY id DESC LIMIT 4`,
+      text: `SELECT * FROM tblaccount WHERE user_id = $1 ORDER BY id DESC LIMIT 4`,
       values: [userId],
     });
 
@@ -188,6 +188,7 @@ export const addTransaction = async (req, res) => {
     res.status(500).json({ status: "failed", message: err.message });
   }
 };
+
 export const transferMoneyToAccount = async (req, res) => {
   try {
     const { userId } = req.body.user;
@@ -230,6 +231,25 @@ export const transferMoneyToAccount = async (req, res) => {
       });
     }
 
+    // ตรวจสอบ 'to_account'
+    const toAccountResult = await pool.query({
+      text: `SELECT * FROM tblaccount WHERE id = $1`,
+      values: [to_account],
+    });
+
+    const toAccount = toAccountResult.rows[0];
+
+    if (!toAccount) {
+      return res.status(404).json({
+        status: "failed",
+        message: "To Account not found.",
+      });
+    }
+
+    // กำหนดค่าเริ่มต้นหากไม่มี account_name
+    const fromAccountName = fromAccount.account_name || "Unknown Account";
+    const toAccountName = toAccount.account_name || "Unknown Account";
+
     // Begin transaction
     await pool.query("BEGIN");
 
@@ -240,27 +260,57 @@ export const transferMoneyToAccount = async (req, res) => {
     });
 
     // Transfer to account
-    const toAccount = await pool.query({
-      text: `UPDATE tblaccount SET account_balance = account_balance + $1, updatedat = CURRENT_TIMESTAMP WHERE id = $2 RETRINING *`,
+    const updatedToAccountResult = await pool.query({
+      text: `UPDATE tblaccount SET account_balance = account_balance + $1, updatedat = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
       values: [newAmount, to_account],
     });
 
+    const updatedToAccount = updatedToAccountResult.rows[0];
+
+    if (!updatedToAccount) {
+      await pool.query("ROLLBACK");
+      return res.status(500).json({
+        status: "failed",
+        message: "Transfer failed. Could not update recipient account.",
+      });
+    }
+
     // Insert transaction records
-    const description = `Transfer (${fromAccount.account_name} - ${toAccount.rows[0].account_name})`;
+    const description = `Transfer (${fromAccountName} - ${toAccountName})`;
 
     await pool.query({
-      text: `INSERT INTO tblransaction(user_id, description, type, status, amount, source) VALUES($1, $2, $3, $4, $5, $6)`,
+      text: `INSERT INTO tbltransaction(user_id, description, type, status, amount, source) VALUES($1, $2, $3, $4, $5, $6)`,
       values: [
         userId,
         description,
         "expense",
         "completed",
         amount,
-        fromAccount.account_name,
+        fromAccountName,
       ],
     });
 
-    const description1 = `Received (${fromAccount.account_name} - ${toAccount.rows[0].account_name})`;
+    const description1 = `Received (${fromAccount.account_name} - ${toAccount.account_name})`;
+
+    await pool.query({
+      text: `INSERT INTO tbltransaction(user_id, description, type, status, amount, source) VALUES($1, $2, $3, $4, $5, $6)`,
+      values: [
+        userId,
+        description1,
+        "income",
+        "Completed",
+        amount,
+        toAccount.account_name,
+      ],
+    });
+
+    // Commit transaction
+    await pool.query("COMMIT");
+
+    res.status(201).json({
+      status: "success",
+      message: "Transfer completed successfully",
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ status: "failed", message: err.message });
