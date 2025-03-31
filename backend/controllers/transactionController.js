@@ -121,9 +121,9 @@ export const addTransaction = async (req, res) => {
   try {
     const { userId } = req.body.user;
     const { account_id } = req.params;
-    const { descripton, source, amount } = req.body;
+    const { description, source, amount } = req.body;
 
-    if (!(descripton || source || amount)) {
+    if (!(description || source || amount)) {
       return res
         .status(403)
         .json({ status: "failed", message: "Provide Required Fields!" });
@@ -167,14 +167,7 @@ export const addTransaction = async (req, res) => {
 
     await pool.query({
       text: `INSERT INTO tbltransaction(user_id, description, type, status, amount, source) VALUES($1, $2, $3, $4, $5, $6)`,
-      values: [
-        userId,
-        RTCSessionDescription,
-        "expense",
-        "Completed",
-        amount,
-        source,
-      ],
+      values: [userId, description, "expense", "Completed", amount, source],
     });
 
     await pool.query("COMMIT");
