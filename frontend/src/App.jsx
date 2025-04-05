@@ -17,7 +17,7 @@ const RootLayout = () => {
     <Navigate to="sign-in" replace={true} />
   ) : (
     <>
-      <div>
+      <div className="min-h[cal(h-screen-10px)]">
         <Outlet></Outlet>
       </div>
     </>
@@ -29,6 +29,7 @@ function App() {
 
   return (
     <main>
+      <div className="w-full min-h-screen px-6 bg-gray-100 md:px-20 dark:bg slate-900"></div>
       <div>
         <Routes>
           <Route element={<RootLayout />}>
