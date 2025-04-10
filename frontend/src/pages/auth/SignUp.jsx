@@ -3,7 +3,15 @@ import React, { useEffect, useState } from "react";
 import * as z from "zod";
 import useStore from "../../store";
 import { useForm } from "react-hook-form";
-import { Card, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { SocialAuth } from "../../components/social-auth";
+import { Separator } from "../../components/separator";
 
 const RegisterSchema = z.object({
   email: z
@@ -16,7 +24,7 @@ const RegisterSchema = z.object({
 });
 
 const SignUp = () => {
-  const { user } = useAuth((state) => state);
+  const { user } = useStore((state) => state);
   const {
     register,
     handleSubmit,
@@ -45,6 +53,22 @@ const SignUp = () => {
               Create Account
             </CardTitle>
           </CardHeader>
+          <CardContent className="p-0">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="mb-8 space-y-6">
+                <SocialAuth isLoading={loading} setLoading={setLoading} />
+                <Separator />
+
+                {/* <Input
+                  disabled={loading}
+                  id="firstName"
+                  label="Name"
+                  register={register}
+                  type
+                  /> */}
+              </div>
+            </form>
+          </CardContent>
         </div>
       </Card>
     </div>
