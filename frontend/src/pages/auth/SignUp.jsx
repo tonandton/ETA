@@ -6,21 +6,27 @@ import { useForm } from "react-hook-form";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SocialAuth } from "../../components/social-auth";
 import { Separator } from "../../components/separator";
+import Input from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { BiLoader } from "react-icons/bi";
 
 const RegisterSchema = z.object({
   email: z
     .string({ required_error: "Email is required" })
     .email({ message: "Invalid email address" }),
-  firstName: z.string({ required_error: "Name is required" }),
+  firstName: z
+    .string({ required_error: "Name is required" })
+    .min(4, "Name is required"),
   password: z
     .string({ required_error: "Password is required" })
-    .min(1, "Password is required"),
+    .min(4, "Password is required"),
 });
 
 const SignUp = () => {
@@ -59,17 +65,63 @@ const SignUp = () => {
                 <SocialAuth isLoading={loading} setLoading={setLoading} />
                 <Separator />
 
-                {/* <Input
+                <Input
                   disabled={loading}
                   id="firstName"
                   label="Name"
                   register={register}
-                  type
-                  /> */}
+                  type="text"
+                  placeholder="John Smith"
+                  error={errors?.firstName?.message}
+                  {...register("firstName")}
+                  className="text-sm border dark:border-gray-800 dark:bg-transparent dark:placeholder:text-gray-700 dark:text-gray-400 dark:outline-none"
+                />
+                <Input
+                  disabled={loading}
+                  id="email"
+                  label="email"
+                  register={register}
+                  type="email"
+                  placeholder="Email"
+                  error={errors?.email?.message}
+                  {...register("email")}
+                  className="text-sm border dark:border-gray-800 dark:bg-transparent dark:placeholder:text-gray-700 dark:text-gray-400 dark:outline-none"
+                />
+                <Input
+                  disabled={loading}
+                  id="password"
+                  label="password"
+                  register={register}
+                  type="password"
+                  placeholder="Password"
+                  error={errors?.password?.message}
+                  {...register("password")}
+                  className="text-sm border dark:border-gray-800 dark:bg-transparent dark:placeholder:text-gray-700 dark:text-gray-400 dark:outline-none"
+                />
               </div>
+              <Button
+                type="submit"
+                className="w-full bg-violet-800"
+                disabled={loading}
+              >
+                {loading ? (
+                  <BiLoader class="text-2xl text-white animate-spin" />
+                ) : (
+                  "Create an account"
+                )}
+              </Button>
             </form>
           </CardContent>
         </div>
+        <CardFooter className="justify-center gap-2">
+          <p className="text-sm text-gray-600">Already have an account?</p>
+          <Link
+            to="/sign-in"
+            className="text-sm font-semibold text-violet-600 hover:inderline"
+          >
+            Sign In
+          </Link>
+        </CardFooter>
       </Card>
     </div>
   );
