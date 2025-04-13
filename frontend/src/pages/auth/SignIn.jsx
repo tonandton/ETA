@@ -1,6 +1,6 @@
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
-import * as z from "zod";
 import useStore from "../../store";
 import { useForm } from "react-hook-form";
 import {
@@ -16,6 +16,8 @@ import { Separator } from "../../components/separator";
 import Input from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { BiLoader } from "react-icons/bi";
+import { toast } from "sonner";
+import api from "../../libs/apiCall";
 
 const LoginSchema = z.object({
   email: z
@@ -27,7 +29,7 @@ const LoginSchema = z.object({
 });
 
 const SignIn = () => {
-  const { user } = useStore((state) => state);
+  const { user, setCredentials } = useStore((state) => state);
   const {
     register,
     handleSubmit,
@@ -44,7 +46,31 @@ const SignIn = () => {
   }, [user]);
 
   const onSubmit = async (data) => {
-    console.log(data);
+    try {
+      setLoading(true);
+
+      const { data: res } = await api.post("/auth/sign-in", data);
+
+      // console.log(data);
+
+      if (res?.data.user) {
+        toast.success(res?.message);
+      }
+
+      const userinfo = { ...res.user, token: res.token };
+      localStorage.setItem("user", JSON.stringify(userinfo));
+
+      setCredentials(userinfo);
+
+      setTimeout(() => {
+        navigate("/overview");
+      }, 1500);
+    } catch (err) {
+      console.log(err.message);
+      toast.error(err?.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,7 +92,6 @@ const SignIn = () => {
                   disabled={loading}
                   id="email"
                   label="email"
-                  register={register}
                   type="email"
                   placeholder="Email"
                   error={errors?.email?.message}
@@ -77,7 +102,6 @@ const SignIn = () => {
                   disabled={loading}
                   id="password"
                   label="password"
-                  register={register}
                   type="password"
                   placeholder="Password"
                   error={errors?.password?.message}
@@ -91,7 +115,7 @@ const SignIn = () => {
                 disabled={loading}
               >
                 {loading ? (
-                  <BiLoader class="text-2xl text-white animate-spin" />
+                  <BiLoader className="text-2xl text-white animate-spin" />
                 ) : (
                   "Sign In"
                 )}

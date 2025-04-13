@@ -5,7 +5,7 @@ import {
 } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuthState } from "react-firebase-hooks/auth";
 import api from "../libs/apiCall";
@@ -16,6 +16,7 @@ import { Button } from "./ui/button";
 export const SocialAuth = ({ isLoading, setLoading }) => {
   const [user] = useAuthState(auth);
   const [selectedProvider, setSelectedProvider] = useState("google");
+  const [firebaseUser, setFirebaseUser] = useState(null);
   const { setCredentials } = useStore((state) => state);
   const navigate = useNavigate();
 
@@ -25,25 +26,26 @@ export const SocialAuth = ({ isLoading, setLoading }) => {
 
     try {
       const res = await signInWithPopup(auth, provider);
+      setFirebaseUser(res.user);
     } catch (err) {
       console.error("Error signing in with Google", err);
     }
   };
 
-  const signInWithGithub = async () => {};
+  // const signInWithGithub = async () => {};
 
   useEffect(() => {
     const saveUserToDb = async () => {
       try {
         const userData = {
-          name: user.displayName,
-          email: user.email,
+          name: firebaseUser.displayName,
+          email: firebaseUser.email,
           provider: selectedProvider,
-          uid: user.uid,
+          uid: firebaseUser.uid,
         };
 
         setLoading(true);
-        const { data: res } = await api.post("/auth/sign-in", userData);
+        const { data: res } = await api.post("/auth/sign-in-oauth", userData);
         console.log(res);
 
         if (res?.user) {
@@ -59,14 +61,14 @@ export const SocialAuth = ({ isLoading, setLoading }) => {
         }
       } catch (err) {
         console.error("Something went wrong", err);
-        toast.error(error?.response?.data?.message || error.message);
+        toast.error(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (user) [saveUserToDb()];
-  }, [user?.uid]);
+    if (firebaseUser) saveUserToDb();
+  }, [firebaseUser?.uid]);
 
   return (
     <div className="flex item-center gap-2">

@@ -1,6 +1,6 @@
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
-import * as z from "zod";
 import useStore from "../../store";
 import { useForm } from "react-hook-form";
 import {
@@ -16,6 +16,8 @@ import { Separator } from "../../components/separator";
 import Input from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { BiLoader } from "react-icons/bi";
+import { toast } from "sonner";
+import api from "../../libs/apiCall";
 
 const RegisterSchema = z.object({
   email: z
@@ -26,11 +28,11 @@ const RegisterSchema = z.object({
     .min(4, "Name is required"),
   password: z
     .string({ required_error: "Password is required" })
-    .min(4, "Password is required"),
+    .min(4, "Password must be at least 4 characters long"),
 });
 
 const SignUp = () => {
-  const { user } = useStore((state) => state);
+  const { user, setCredentials } = useStore((state) => state);
   const {
     register,
     handleSubmit,
@@ -43,11 +45,38 @@ const SignUp = () => {
   const [loading, setLoading] = useState();
 
   useEffect(() => {
+    console.log("Current user:", user);
     user && navigate("/");
   }, [user]);
 
   const onSubmit = async (data) => {
-    console.log(data);
+    try {
+      setLoading(true);
+
+      const { data: res } = await api.post("/auth/sign-up", data);
+      // console.log(res);
+
+      if (res?.user) {
+        toast.success("Account Created Successfully. You ca now login");
+
+        const userinfo = { ...res.user, token: res.token };
+        localStorage.setItem("user", JSON.stringify(userinfo));
+        setCredentials(userinfo);
+
+        setTimeout(() => {
+          navigate("/overview");
+        }, 1500);
+      }
+    } catch (err) {
+      // console.log(err.message);
+      const errorMessage = err?.response?.data?.message || err.message;
+
+      if (errorMessage.includes("duplicate key")) {
+        toast.error("Email already exists. Please use a different one.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,7 +98,6 @@ const SignUp = () => {
                   disabled={loading}
                   id="firstName"
                   label="Name"
-                  register={register}
                   type="text"
                   placeholder="John Smith"
                   error={errors?.firstName?.message}
@@ -80,7 +108,6 @@ const SignUp = () => {
                   disabled={loading}
                   id="email"
                   label="email"
-                  register={register}
                   type="email"
                   placeholder="Email"
                   error={errors?.email?.message}
@@ -91,7 +118,6 @@ const SignUp = () => {
                   disabled={loading}
                   id="password"
                   label="password"
-                  register={register}
                   type="password"
                   placeholder="Password"
                   error={errors?.password?.message}
@@ -105,7 +131,7 @@ const SignUp = () => {
                 disabled={loading}
               >
                 {loading ? (
-                  <BiLoader class="text-2xl text-white animate-spin" />
+                  <BiLoader className="text-2xl text-white animate-spin" />
                 ) : (
                   "Create an account"
                 )}

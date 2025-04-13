@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
@@ -12,7 +12,7 @@ import { Toaster } from "sonner";
 // import "./App.css";
 
 const RootLayout = () => {
-  const user = useStore((state) => state);
+  const { user } = useStore((state) => state);
   setAuthToken(user?.token || "");
 
   return !user ? (
@@ -28,6 +28,13 @@ const RootLayout = () => {
 
 function App() {
   const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const storeUser = localStorage.getItem("user");
+    if (storeUser) {
+      setCredentials(JSON.parse(storeUser));
+    }
+  }, []);
 
   return (
     <main>
