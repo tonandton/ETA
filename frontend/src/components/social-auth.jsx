@@ -50,13 +50,13 @@ export const SocialAuth = ({ isLoading, setLoading }) => {
 
         if (res?.user) {
           toast.success(res?.message);
+
           const userinfo = { ...res?.user, token: res?.token };
           localStorage.setItem("user", JSON.stringify(userinfo));
-
           setCredentials(userinfo);
 
           setTimeout(() => {
-            navigate("overview");
+            navigate("/overview", { replace: true });
           }, 1500);
         }
       } catch (err) {

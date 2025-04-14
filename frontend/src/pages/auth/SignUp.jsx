@@ -23,7 +23,7 @@ const RegisterSchema = z.object({
   email: z
     .string({ required_error: "Email is required" })
     .email({ message: "Invalid email address" }),
-  firstName: z
+  firstname: z
     .string({ required_error: "Name is required" })
     .min(4, "Name is required"),
   password: z
@@ -96,12 +96,12 @@ const SignUp = () => {
 
                 <Input
                   disabled={loading}
-                  id="firstName"
+                  id="firstname"
                   label="Name"
                   type="text"
                   placeholder="John Smith"
-                  error={errors?.firstName?.message}
-                  {...register("firstName")}
+                  error={errors?.firstname?.message}
+                  {...register("firstname")}
                   className="text-sm border dark:border-gray-800 dark:bg-transparent dark:placeholder:text-gray-700 dark:text-gray-400 dark:outline-none"
                 />
                 <Input

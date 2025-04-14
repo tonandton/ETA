@@ -9,6 +9,7 @@ import Transactions from "./pages/Transactions";
 import useStore from "./store";
 import { setAuthToken } from "./libs/apiCall";
 import { Toaster } from "sonner";
+import Navbar from "./components/navbar";
 // import "./App.css";
 
 const RootLayout = () => {
@@ -19,6 +20,7 @@ const RootLayout = () => {
     <Navigate to="sign-in" replace={true} />
   ) : (
     <>
+      <Navbar />
       <div className="min-h[cal(h-screen-10px)]">
         <Outlet />
       </div>
@@ -27,12 +29,21 @@ const RootLayout = () => {
 };
 
 function App() {
+  const { setCredentials } = useStore((state) => state);
   const [count, setCount] = useState(0);
 
   useEffect(() => {
     const storeUser = localStorage.getItem("user");
     if (storeUser) {
-      setCredentials(JSON.parse(storeUser));
+      const parsed = JSON.parse(storeUser);
+      if (parsed && parsed.firstname) {
+        console.log("✅ Loaded user from localStorage:", parsed);
+        setCredentials(parsed);
+      } else {
+        console.warn("⚠️ localStorage user is invalid:", parsed);
+      }
+    } else {
+      console.log("❌ No user found in local storage");
     }
   }, []);
 
@@ -46,7 +57,7 @@ function App() {
               <Route path="/overview" element={<Dashboard />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/account" element={<AccountPage />} />
+              <Route path="/accounts" element={<AccountPage />} />
             </Route>
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/sign-in" element={<SignIn />} />

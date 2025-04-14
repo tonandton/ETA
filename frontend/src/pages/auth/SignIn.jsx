@@ -51,19 +51,30 @@ const SignIn = () => {
 
       const { data: res } = await api.post("/auth/sign-in", data);
 
-      // console.log(data);
+      console.log("📦 res.user:", res?.user);
+      console.log("📦 token:", res?.token);
 
-      if (res?.data.user) {
+      if (res?.user) {
         toast.success(res?.message);
       }
 
-      const userinfo = { ...res.user, token: res.token };
-      localStorage.setItem("user", JSON.stringify(userinfo));
+      // const userinfo = { ...res?.user, token: res?.token };
+      // localStorage.setItem("user", JSON.stringify(userinfo));
+      // setCredentials(userinfo);
 
+      const userinfo = {
+        firstname: res?.user?.firstname || res?.user?.given_name || "Guest",
+        email: res?.user?.email,
+        token: res?.token,
+      };
+
+      console.log("✅ userinfo ส่งเข้า Zustand:", userinfo);
+
+      localStorage.setItem("user", JSON.stringify(userinfo));
       setCredentials(userinfo);
 
       setTimeout(() => {
-        navigate("/overview");
+        navigate("/overview", { replace: true });
       }, 1500);
     } catch (err) {
       console.log(err.message);
