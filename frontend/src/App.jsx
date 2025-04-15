@@ -39,6 +39,7 @@ function App() {
       if (parsed && parsed.firstname) {
         console.log("✅ Loaded user from localStorage:", parsed);
         setCredentials(parsed);
+        setAuthToken(parsed.token);
       } else {
         console.warn("⚠️ localStorage user is invalid:", parsed);
       }

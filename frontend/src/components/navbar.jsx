@@ -120,15 +120,28 @@ const MobileSidebar = () => {
               {open ? <MdOutlineClose size={26} /> : <IoIosMenu size={26} />}
             </PopoverButton>
             <TransitionWrapper>
-              <PopoverPanel className="absolute z-50 w-screen max-w-sm px-4 py-6 mt-3 transform -translate-x-1/2 bg-white left-1/2">
+              <PopoverPanel className="absolute left-1/2 z-50 bg-white dark:bg-slate-800 mt-3 w-screen max-w-sm -translate-x-1/2 transform px-4 py-6">
                 <div className="flex flex-col space-y-2">
                   {links.map(({ label, link }, index) => (
                     <Link to={Link} key={index}>
-                      <PopoverButton>
-                        <ThemeSwitch />
+                      <PopoverButton
+                        className={`${
+                          link === path
+                            ? "bg-black darkLbg-slaate-900 text-white"
+                            : "text-gray-700 dark:text-gray-500"
+                        } w-1/2 px-6 py-2 rounded-full text-left`}
+                      >
+                        {label}
                       </PopoverButton>
                     </Link>
                   ))}
+
+                  <div className="flex items-center justify-between py-6 px-4">
+                    <PopoverButton>
+                      <ThemeSwitch />
+                    </PopoverButton>
+                    <UserMenu />
+                  </div>
                 </div>
               </PopoverPanel>
             </TransitionWrapper>

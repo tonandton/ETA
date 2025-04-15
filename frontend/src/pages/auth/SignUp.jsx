@@ -17,7 +17,7 @@ import Input from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { BiLoader } from "react-icons/bi";
 import { toast } from "sonner";
-import api from "../../libs/apiCall";
+import api, { setAuthToken } from "../../libs/apiCall";
 
 const RegisterSchema = z.object({
   email: z
@@ -56,12 +56,13 @@ const SignUp = () => {
       const { data: res } = await api.post("/auth/sign-up", data);
       // console.log(res);
 
-      if (res?.user) {
-        toast.success("Account Created Successfully. You ca now login");
-
+      if (res?.user && res?.token) {
         const userinfo = { ...res.user, token: res.token };
         localStorage.setItem("user", JSON.stringify(userinfo));
+        setAuthToken(userinfo.token);
         setCredentials(userinfo);
+
+        toast.success("Account Created Successfully. You ca now login");
 
         setTimeout(() => {
           navigate("/overview");
