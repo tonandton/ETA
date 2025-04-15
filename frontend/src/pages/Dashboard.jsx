@@ -6,6 +6,8 @@ import Stats from "../components/stats";
 import { Chart } from "../components/chart";
 import DoughnutChart from "../components/piechart";
 import api from "../libs/apiCall";
+import Accounts from "../components/accounts";
+import RecentTransactions from "../components/recent-transactions";
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
@@ -74,6 +76,7 @@ const Dashboard = () => {
       </div>
 
       <div className="flex flex-col reverse gap-0 md:flex row md:gap-10 2xl:gap-20">
+        <RecentTransactions data={data?.lastTransactions} />
         {data?.lastAccount?.legth > 0 && <Accounts data={data?.lastAccount} />}
       </div>
     </div>
