@@ -29,8 +29,17 @@ const RootLayout = () => {
 };
 
 function App() {
+  const { theme } = useStore((state) => state);
   const { setCredentials } = useStore((state) => state);
-  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+      // document.body.classList.add("light");
+    }
+  }, [theme]);
 
   useEffect(() => {
     const storeUser = localStorage.getItem("user");
@@ -50,7 +59,7 @@ function App() {
 
   return (
     <main>
-      <div className="w-full min-h-screen px-6 bg-gray-100 md:px-20 dark:bg slate-900">
+      <div className="w-full min-h-screen px-6 bg-gray-100 md:px-20 dark:bg-slate-900">
         <div>
           <Routes>
             <Route element={<RootLayout />}>
