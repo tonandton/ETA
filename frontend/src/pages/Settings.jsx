@@ -1,6 +1,7 @@
 import React from "react";
 import useStore from "../store";
 import Title from "../components/title";
+import SettingsForm from "../components/settingForm";
 
 const Settings = () => {
   const { user, setCredentials } = useStore((state) => state);
@@ -20,10 +21,12 @@ const Settings = () => {
             <div className="flex items-center justify-center w-12 h-12 font-bold text-2xl text-white rounded-full cursor-pointer bg-violet-600">
               <p>{user?.firstname.charAt(0)}</p>
             </div>
-            <div className="text-2xl font-semibold text-black dark:text-gray-400">
+            <p className="text-2xl font-semibold text-black dark:text-gray-400">
               {user?.firstname}
-            </div>
+            </p>
           </div>
+          <SettingsForm />
+          {/* {user?.provided && <ChangePassword/>} */}
         </div>
       </div>
     </div>
