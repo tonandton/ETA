@@ -29,26 +29,15 @@ const SettingsForm = () => {
       currency: user?.currency,
     }) || "";
 
-  const [query, setQuery] = useState("");
   const [countriesData, setCountriesData] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (values) => {};
 
-  const toggleTheme = (vol) => {
+  const toggleTheme = (val) => {
     setTheme(val);
     localStorage.setItem("theme", val);
   };
-
-  const filteredCountries =
-    query === ""
-      ? countriesData
-      : countriesData.filter((country) => {
-          country.country
-            .toLowerCase()
-            .replace(/\s+/g, "")
-            .includes(query.toLowerCase().replace(/\s+/g, ""));
-        });
 
   const getCountriesList = async () => {
     const data = await fetchCountries();
@@ -60,17 +49,40 @@ const SettingsForm = () => {
   }, []);
 
   const Countries = () => {
+    const [query, setQuery] = useState("");
+
+    const filteredCountries =
+      query === ""
+        ? countriesData
+        : countriesData.filter((country) =>
+            (country?.country || "")
+              .toLowerCase()
+              // .replace(/\s+/g, "")
+              .includes(
+                query.toLowerCase()
+                // .replace(/\s+/g, "")
+              )
+          );
+
     return (
       <div className="w-full">
-        <Combobox value={selectedCountry} onChange={setSelectedCountry}>
+        <Combobox
+          value={selectedCountry}
+          onChange={(val) => {
+            setSelectedCountry(val);
+            setQuery("");
+          }}
+        >
           <div className="relative mt-1">
             <div className="">
               <ComboboxInput
                 className="inputStyles"
-                displayValue={(country) => country?.country}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                }}
+                displayValue={(country) => query || country?.country || ""}
               />
-              <ComboboxButton className="absoute inset-y-0 right-0 flex items-center pr-2">
+              <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
                 <BsChevronExpand className="text-gray-400" />
               </ComboboxButton>
             </div>
@@ -79,7 +91,7 @@ const SettingsForm = () => {
               leave="transition ease-in duration-100"
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
-              afterLeave={() => setQuery("")}
+              // afterLeave={() => setQuery("")}
             >
               <ComboboxOptions className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-slate-900 py-4">
                 {filteredCountries.length === 0 && query !== "" ? (
@@ -150,7 +162,7 @@ const SettingsForm = () => {
               required: "First Name is required!",
             })}
             error={errors.firstname ? errors.firstname.message : ""}
-            className="inputStyle"
+            className="inputStyles"
           />
         </div>
         <div className="w-full">
@@ -163,8 +175,88 @@ const SettingsForm = () => {
               required: "Last Name is required!",
             })}
             error={errors.lastname ? errros.lastname.message : ""}
-            className="inputStyle"
+            className="inputStyles"
           />
+        </div>
+      </div>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="w-full">
+          <Input
+            name="email"
+            label="Email"
+            type="email"
+            placeholder={user.email}
+            register={register("email", {
+              required: "Email is required!",
+            })}
+            error={errors.email ? errros.email.message : ""}
+            className="inputStyles"
+          />
+        </div>
+        <div className="w-full">
+          <Input
+            name="phone"
+            label="Phone"
+            type="text"
+            placeholder={user.phone}
+            register={register("phone", {
+              required: "Last Name is required!",
+            })}
+            error={errors.phone ? errros.phone.message : ""}
+            className="inputStyles"
+          />
+        </div>
+      </div>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="w-full">
+          <span className="labelStyles">Country</span>
+          <Countries />
+        </div>
+        <div className="w-full">
+          <span className="labelStyles">Currency</span>
+          <select className="inputStyles">
+            <option>{selectedCountry?.currency || user?.country}</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="w-full flex items-center justify-between pt-10">
+        <div className="">
+          <p className="text-lg text-black dark:text-gray-400 font--semibold">
+            Appearance
+          </p>
+          <span className="labelStyles">
+            Customize how your theme looks on your device.
+          </span>
+        </div>
+
+        <div className="w-28 md:w-40">
+          <select
+            className="inputStyles"
+            defaultValue={theme}
+            onChange={(e) => toggleTheme(e.target.value)}
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="w-full flex items-center justify-between pb-10">
+        <div>
+          <p className="text-lg text-black dark:text-gray-400 font-semibold">
+            Language
+          </p>
+          <span className="labelStyles">
+            Custoomize what language you want to use.
+          </span>
+        </div>
+
+        <div className="w-28 md:w-40">
+          <select className="inputStyles">
+            <option value="English">English</option>
+            <option value="Thai">ไทย</option>
+          </select>
         </div>
       </div>
     </form>
