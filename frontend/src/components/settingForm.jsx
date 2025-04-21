@@ -6,14 +6,16 @@ import {
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
-  // Input,
   Transition,
 } from "@headlessui/react";
 import { BsChevronExpand } from "react-icons/bs";
-import { BiCheck } from "react-icons/bi";
+import { BiCheck, BiLoader } from "react-icons/bi";
 import { Form, FormProvider, useForm } from "react-hook-form";
 import { fetchCountries } from "../libs";
 import Input from "./ui/input";
+import api from "../libs/apiCall";
+import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 const SettingsForm = () => {
   const { user, theme, setTheme } = useStore((state) => state);
@@ -21,6 +23,7 @@ const SettingsForm = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({ defaultValues: { ...user } });
 
   const [selectedCountry, setSelectedCountry] =
@@ -32,7 +35,32 @@ const SettingsForm = () => {
   const [countriesData, setCountriesData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (values) => {};
+  const onSubmit = async (data) => {
+    // console.log(data);
+    try {
+      setLoading(true);
+
+      const newData = {
+        ...data,
+        country: selectedCountry.country,
+        currency: selectedCountry.currency,
+      };
+      const { data: res } = await api.put(`/user/${user?.id}`, newData);
+      // const { data: res } = await api.put(`/user`, newData);
+
+      if (res?.user) {
+        const newUser = { ...res.user, token: user.token };
+        localStorage.setItem("user", JSON.stringify(newUser));
+
+        toast.success(res?.message);
+      }
+    } catch (error) {
+      console.error("Sometthing went wrong:", error);
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleTheme = (val) => {
     setTheme(val);
@@ -47,6 +75,22 @@ const SettingsForm = () => {
   useEffect(() => {
     getCountriesList();
   }, []);
+
+  useEffect(() => {
+    if (user && user.firstname) {
+      reset({
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        phone: user.phone,
+      });
+
+      setSelectedCountry({
+        country: user.country,
+        currency: user.currency,
+      });
+    }
+  }, [user, reset]);
 
   const Countries = () => {
     const [query, setQuery] = useState("");
@@ -157,7 +201,7 @@ const SettingsForm = () => {
             name="firstname"
             label="First Name"
             type="text"
-            placeholder="John"
+            placeholder={user.firstname || "first name"}
             register={register("firstname", {
               required: "First Name is required!",
             })}
@@ -170,11 +214,12 @@ const SettingsForm = () => {
             name="lastname"
             label="Last Name"
             type="text"
-            placeholder="Doe"
+            placeholder={user.lastname}
+            // {...register("lastname")}
             register={register("lastname", {
               required: "Last Name is required!",
             })}
-            error={errors.lastname ? errros.lastname.message : ""}
+            error={errors.lastname ? errors.lastname.message : ""}
             className="inputStyles"
           />
         </div>
@@ -189,7 +234,7 @@ const SettingsForm = () => {
             register={register("email", {
               required: "Email is required!",
             })}
-            error={errors.email ? errros.email.message : ""}
+            error={errors.email ? errors.email.message : ""}
             className="inputStyles"
           />
         </div>
@@ -198,11 +243,12 @@ const SettingsForm = () => {
             name="phone"
             label="Phone"
             type="text"
-            placeholder={user.phone}
-            register={register("phone", {
-              required: "Last Name is required!",
+            placeholder={user.contact}
+            // {...register("phone")}
+            register={register("contact", {
+              required: "Phone is required!",
             })}
-            error={errors.phone ? errros.phone.message : ""}
+            error={errors.phone ? errors.phone.message : ""}
             className="inputStyles"
           />
         </div>
@@ -258,6 +304,24 @@ const SettingsForm = () => {
             <option value="Thai">ไทย</option>
           </select>
         </div>
+      </div>
+
+      <div className="flex items-center gap-6 justify-end pb-10 border-b-2 border-gray-200 dark:border-gray-800">
+        <Button
+          variant="outline"
+          loading={loading}
+          type="reset"
+          className="px-6 bg-transparent text-black dark:text-white border border-gray-200 dark:border-gray-700"
+        >
+          Reset
+        </Button>
+        <Button
+          loading={loading}
+          type="submit"
+          className="px-8 bg-violet-800 text-white"
+        >
+          {loading ? <BiLoader className="animate-spin text-white" /> : "Save"}
+        </Button>
       </div>
     </form>
   );

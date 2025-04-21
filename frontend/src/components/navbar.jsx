@@ -58,7 +58,7 @@ const UserMenu = () => {
   }, []);
 
   const firstLetter = user?.firstname?.charAt(0) || "?";
-  console.log(firstLetter);
+  // console.log(firstLetter);
 
   return (
     <Menu as="div" className="relative z-50">

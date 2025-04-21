@@ -20,6 +20,8 @@ export function Button({
   variant = "default",
   size = "default",
   className,
+  loading = false,
+  disabled,
   ...props
 }) {
   return (
@@ -32,7 +34,8 @@ export function Button({
       )}
       {...props}
     >
-      {children}
+      {/* {children} */}
+      {loading ? "Loading..." : children}
     </button>
   );
 }
