@@ -51,8 +51,8 @@ const SignIn = () => {
 
       const { data: res } = await api.post("/auth/sign-in", data);
 
-      console.log("📦 res.user:", res?.user);
-      console.log("📦 token:", res?.token);
+      // console.log("📦 res.user:", res?.user);
+      // console.log("📦 token:", res?.token);
 
       if (res?.user) {
         toast.success(res?.message);
@@ -64,7 +64,11 @@ const SignIn = () => {
 
       const userinfo = {
         firstname: res?.user?.firstname || res?.user?.given_name || "Guest",
+        lastname: res?.user?.lastname,
         email: res?.user?.email,
+        contact: res?.user?.contact,
+        country: res?.user?.country,
+        currency: res?.user?.currency,
         token: res?.token,
       };
 

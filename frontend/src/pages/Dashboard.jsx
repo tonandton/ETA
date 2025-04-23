@@ -21,7 +21,7 @@ const Dashboard = () => {
       const res = await api.get(URL, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Data:", res.data);
+      // console.log("Data:", res.data);
       setData(res.data);
     } catch (err) {
       console.error(err);

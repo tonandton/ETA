@@ -50,7 +50,7 @@ const UserMenu = () => {
     const storeUser = localStorage.getItem("user");
     if (storeUser) {
       const parsed = JSON.parse(storeUser);
-      console.log("Parsed user: ", parsed);
+      // console.log("Parsed user: ", parsed);
       setCredentials(JSON.parse(storeUser));
     } else {
       console.log("No user found in local storage");

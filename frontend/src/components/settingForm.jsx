@@ -24,7 +24,7 @@ const SettingsForm = () => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({ defaultValues: { ...user } });
+  } = useForm({ defaultValues: {} });
 
   const [selectedCountry, setSelectedCountry] =
     useState({
@@ -82,12 +82,12 @@ const SettingsForm = () => {
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
-        phone: user.phone,
+        contact: user.contact,
       });
 
       setSelectedCountry({
-        country: user.country,
-        currency: user.currency,
+        country: user.country || "",
+        currency: user.currency || "",
       });
     }
   }, [user, reset]);
@@ -101,11 +101,8 @@ const SettingsForm = () => {
         : countriesData.filter((country) =>
             (country?.country || "")
               .toLowerCase()
-              // .replace(/\s+/g, "")
-              .includes(
-                query.toLowerCase()
-                // .replace(/\s+/g, "")
-              )
+              .replace(/\s+/g, "")
+              .includes(query.toLowerCase().replace(/\s+/g, ""))
           );
 
     return (
@@ -240,7 +237,7 @@ const SettingsForm = () => {
         </div>
         <div className="w-full">
           <Input
-            name="phone"
+            name="contact"
             label="Phone"
             type="text"
             placeholder={user.contact}
@@ -248,7 +245,7 @@ const SettingsForm = () => {
             register={register("contact", {
               required: "Phone is required!",
             })}
-            error={errors.phone ? errors.phone.message : ""}
+            error={errors.contact ? errors.contact.message : ""}
             className="inputStyles"
           />
         </div>
