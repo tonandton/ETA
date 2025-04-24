@@ -2,6 +2,7 @@ import React from "react";
 import useStore from "../store";
 import Title from "../components/title";
 import SettingsForm from "../components/settingForm";
+import { ChangePassword } from "../components/changePassword";
 
 const Settings = () => {
   const { user, setCredentials } = useStore((state) => state);
@@ -26,7 +27,7 @@ const Settings = () => {
             </p>
           </div>
           <SettingsForm />
-          {/* {user?.provided && <ChangePassword/>} */}
+          {!user?.provided && <ChangePassword />}
         </div>
       </div>
     </div>
